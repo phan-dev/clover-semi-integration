@@ -1,0 +1,43 @@
+PODS:
+  - CloverConnector (4.0.0):
+    - ObjectMapper (= 3.5.1)
+    - Starscream (= 3.1.0)
+    - SwiftyJSON (= 5.0.0)
+  - ObjectMapper (3.5.1)
+  - Starscream (3.1.0)
+  - SwiftyJSON (5.0.0)
+
+DEPENDENCIES:
+  - CloverConnector (from `https://github.com/clover/remote-pay-ios.git`, tag `4.0.0`)
+  - Starscream (from `https://github.com/clover/Starscream.git`, branch `queuePriority-3.0.0`)
+
+SPEC REPOS:
+  trunk:
+    - ObjectMapper
+    - SwiftyJSON
+
+EXTERNAL SOURCES:
+  CloverConnector:
+    :git: https://github.com/clover/remote-pay-ios.git
+    :tag: 4.0.0
+  Starscream:
+    :branch: queuePriority-3.0.0
+    :git: https://github.com/clover/Starscream.git
+
+CHECKOUT OPTIONS:
+  CloverConnector:
+    :git: https://github.com/clover/remote-pay-ios.git
+    :tag: 4.0.0
+  Starscream:
+    :commit: 8b9dfa67cecb13a33fb787986f8b8895953219c6
+    :git: https://github.com/clover/Starscream.git
+
+SPEC CHECKSUMS:
+  CloverConnector: 33988dbe1fd89c799a2c38a5d88c3f60116fb3f9
+  ObjectMapper: 70187b8941977c62ccfb423caf6b50be405cabf0
+  Starscream: 5cbf3d36bf5af6906d1362bba4ce326bb011d4cc
+  SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
+
+PODFILE CHECKSUM: a9f5bca406c083d095a4cd9db85d744078070397
+
+COCOAPODS: 1.10.1

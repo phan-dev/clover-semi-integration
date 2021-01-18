@@ -1,0 +1,27 @@
+# Uncomment the next line to define a global platform for your project
+platform :ios, '9.0'
+
+# Comment the next line if you don't want to use dynamic frameworks
+use_frameworks!
+
+target 'Runner' do
+  # Pods for Runner
+
+  # The queuePriority branch of our fork of the Starscream framework is required for reliable transport of large files
+  # Defining it here in the PodFile overrides the podspec dependency, which isn't allowed to specify a specific location and branch
+  pod 'Starscream', :git => 'https://github.com/clover/Starscream.git', :branch => 'queuePriority-3.0.0'
+
+  pod 'CloverConnector', :git => 'https://github.com/clover/remote-pay-ios.git', :tag => '4.0.0'
+
+  post_install do |installer|
+      ['CloverConnector'].each do |targetName|
+          targets = installer.pods_project.targets.select { |target| target.name == targetName }
+          target = targets[0]
+          target.build_configurations.each do |config|
+              config.build_settings['SWIFT_VERSION'] = '5.3'
+              #config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+          end
+      end
+  end
+
+end
