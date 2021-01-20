@@ -24,3 +24,5 @@ A few resources to get you started:
 - [Clover: Clover Connector iOS SDK](https://docs.clover.com/docs/ios)
 - [Clover: Configuring Secure Network Pay Display](https://docs.clover.com/docs/configuring-secure-network-pay-display)
 - [App icon Generator](https://appicon.co)
+- [Dart programming language](https://dart.dev)
+- [Swift programming language](https://developer.apple.com/swift)
