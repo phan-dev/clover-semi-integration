@@ -1,16 +1,11 @@
-# clover_semi_integration
+# Clover Semi-integration for Flutter-based POS (iOS)
 
-A new Flutter project.
 
-## Getting Started
+## Technical
 
-This project is a starting point for a Flutter application.
+This project is a Clover Semi-integration for a Flutter-based POS application which run on iOS.
 
-A few resources to get you started if this is your first Flutter project:
+A few resources to get you started:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- [Flutter: Writing custom platform-specific code](https://flutter.dev/docs/development/platform-integration/platform-channels?tab=ios-channel-swift-tab)
+- [Clover: Clover Connector iOS SDK](https://docs.clover.com/docs/ios)
