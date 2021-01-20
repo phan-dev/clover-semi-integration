@@ -5,6 +5,7 @@ import CloverConnector
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
     var cloverChannel : FlutterMethodChannel!
+    var cm: ConnectionManager!
 
     override func application(
         _ application: UIApplication,
@@ -15,11 +16,16 @@ import CloverConnector
         cloverChannel.setMethodCallHandler({
             [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
             // Note: this method is invoked on the UI thread.
-            guard call.method == "getConnection" else {
+            guard call.method == "connect" || call.method == "takePayment" else {
                 result(FlutterMethodNotImplemented)
                 return
             }
-            self?.receiveConnectionStatus(result: result)
+            if(call.method == "connect"){
+                self?.receiveConnectionStatus(result: result)
+            }
+            else if(call.method == "takePayment"){
+                self?.takePayment(result: result)
+            }
         })
         
         GeneratedPluginRegistrant.register(with: self)
@@ -28,13 +34,19 @@ import CloverConnector
     
     private func receiveConnectionStatus(result: FlutterResult) {
         var cc:ICloverConnector?
-        var cm = ConnectionManager(cloverConnector: cc, channel: cloverChannel)
+        cm = ConnectionManager(cloverConnector: cc, channel: cloverChannel)
         cm.connect()
+    }
+
+    private func takePayment(result: FlutterResult) {
+        cm.doSale()
     }
 }
 
 class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfiguration {
     var cc:ICloverConnector?
+
+    var myToken: String?
 
     var myChannel: FlutterMethodChannel
     init(cloverConnector: ICloverConnector?, channel: FlutterMethodChannel){
@@ -47,9 +59,9 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         // a new pairing with the device
         let savedAuthToken = loadAuthToken()
 
-        let config = WebSocketDeviceConfiguration(endpoint: "wss://192.168.1.186:12345/remote_pay",
-            remoteApplicationID: "com.yourcompany.pos.app:4.3.5",
-            posName: "RegisterApp", posSerial: "ABC-123",
+        let config = WebSocketDeviceConfiguration(endpoint: "wss://192.168.1.137:12345/remote_pay",
+            remoteApplicationID: "phan.dev",
+            posName: "Flutter POS", posSerial: "POS-123",
             pairingAuthToken: savedAuthToken, pairingDeviceConfiguration: self)
 
         cc = CloverConnectorFactory.createICloverConnector(config: config)
@@ -58,21 +70,23 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
     }
 
     func doSale() {
+        cc?.showMessage("Take Payment")
         // if onDeviceReady has been called
-        let saleRequest = SaleRequest(amount: 1743, externalId: "bc54de43f3")
+        let saleRequest = SaleRequest(amount: 131, externalId: "bc54de43g1")
         // configure other properties of SaleRequest
         cc?.sale(saleRequest)
     }
 
     // store the token to be loaded later by loadAuthToken
-    func saveAuthToken(token:String) {}
-    func loadAuthToken() -> String? { return nil }
+    func saveAuthToken(token:String) {
+        myToken = token;
+    }
+    func loadAuthToken() -> String? { return myToken }
 
 
     // PairingDeviceConfiguration
     func onPairingCode(_ pairingCode: String) {
         // display pairingCode to user, to be entered on the Clover Mini
-
         myChannel.invokeMethod("getCode", arguments: pairingCode);
     }
 
@@ -81,25 +95,33 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         // save this authToken to pass in to the config for future connections
         // so pairing will happen automatically
         saveAuthToken(token: authToken)
-        myChannel.invokeMethod("getConnectionStatus", arguments: nil);
+        myChannel.invokeMethod("getConnectionStatus", arguments: "onPairingSuccess");
     }
 
 
     // DefaultCloverConnectorListener
 
     // called when device is disconnected
-    override func onDeviceDisconnected() {}
+    override func onDeviceDisconnected() {
+        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceDisconnected");
+    }
 
     // called when device is connected, but not ready for requests
-    override func onDeviceConnected() {}
+    override func onDeviceConnected() {
+        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceConnected");
+    }
 
     // called when device is ready to take requests. Note: May be called more than once
-    override func onDeviceReady(_ info:MerchantInfo){}
+    override func onDeviceReady(_ info:MerchantInfo){
+        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceReady");
+    }
 
     // required if Mini wants the POS to verify a signature
     override func onVerifySignatureRequest(_ signatureVerifyRequest: VerifySignatureRequest) {
         //present signature to user, then
         // acceptSignature(...) or rejectSignature(...)
+        cc?.acceptSignature(signatureVerifyRequest)
+        myChannel.invokeMethod("getPaymentStatus", arguments: "onVerifySignatureRequest");
     }
 
     // required if Mini wants the POS to verify a payment
@@ -108,14 +130,17 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         cc?.acceptPayment(request.payment!)
         // or
         // cc?.rejectPayment(...)
+        myChannel.invokeMethod("getPaymentStatus", arguments: "onConfirmPaymentRequest");
     }
 
     // override other callback methods
     override func onSaleResponse(_ response:SaleResponse) {
         if response.success {
             // sale successful and payment is in the response (response.payment)
+            myChannel.invokeMethod("getPaymentStatus", arguments: "sale successful");
         } else {
             // sale failed or was canceled
+            myChannel.invokeMethod("getPaymentStatus", arguments: "sale failed or was canceled");
         }
     }
 

@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Clover Semi-integration Demo',
+      title: 'Clover Semi-integration with Flutter POS',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter POS'),
     );
   }
 }
@@ -53,18 +53,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 var _platform = MethodChannel('phan.dev/clover');
+
 class _MyHomePageState extends State<MyHomePage> {
   // Get connection status.
-  String _connectionStatus = 'Unknown status.';
-  String _pairingCode = 'Unknown code.';
+  String _connectionStatus = 'Unknown connection status.';
+  String _pairingCode = 'Unknown pairing code.';
+  String _paymentStatus = 'Unknown payment status.';
 
-  Future<void> _getConnection() async {
+  Future<void> _connect() async {
     String connectionStatus;
 
     _platform.setMethodCallHandler(this._methodCallHandler);
 
     try {
-      final String result = await _platform.invokeMethod('getConnection');
+      final String result = await _platform.invokeMethod('connect');
       connectionStatus = 'Connection status: $result';
     } on PlatformException catch (e) {
       connectionStatus = "Failed to connect: '${e.message}'.";
@@ -75,23 +77,40 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> _takePayment() async {
+    String paymentStatus;
+    try {
+      final String result = await _platform.invokeMethod('takePayment');
+      paymentStatus = 'Payment status: $result';
+    } on PlatformException catch (e) {
+      paymentStatus = "Failed to take payment: '${e.message}'.";
+    }
+
+    setState(() {
+      _paymentStatus = paymentStatus;
+    });
+  }
+
   Future<void> _methodCallHandler(MethodCall call) async {
     switch (call.method) {
       case 'getCode':
-        String pairingCode = call.arguments;
         setState(() {
-          _pairingCode = pairingCode;
+          _pairingCode = call.arguments;
         });
         break;
       case 'getConnectionStatus':
         setState(() {
-          _connectionStatus = "Connect sucessfully";
+          _connectionStatus = call.arguments;
+        });
+        break;
+      case 'getPaymentStatus':
+        setState(() {
+          _paymentStatus = call.arguments;
         });
         break;
       default:
-        String pairingCode = "N/A";
         setState(() {
-          _pairingCode = pairingCode;
+          _pairingCode = 'N/A';
         });
     }
   }
@@ -105,10 +124,15 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             ElevatedButton(
               child: Text('Connect'),
-              onPressed: _getConnection,
+              onPressed: _connect,
             ),
             Text(_connectionStatus),
             Text(_pairingCode),
+            ElevatedButton(
+              child: Text('Take Payment'),
+              onPressed: _takePayment,
+            ),
+            Text(_paymentStatus),
           ],
         ),
       ),
