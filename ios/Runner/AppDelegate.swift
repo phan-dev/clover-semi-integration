@@ -81,6 +81,7 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         // save this authToken to pass in to the config for future connections
         // so pairing will happen automatically
         saveAuthToken(token: authToken)
+        myChannel.invokeMethod("getConnectionStatus", arguments: nil);
     }
 
 

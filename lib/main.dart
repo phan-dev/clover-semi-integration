@@ -83,6 +83,11 @@ class _MyHomePageState extends State<MyHomePage> {
           _pairingCode = pairingCode;
         });
         break;
+      case 'getConnectionStatus':
+        setState(() {
+          _connectionStatus = "Connect sucessfully";
+        });
+        break;
       default:
         String pairingCode = "N/A";
         setState(() {
