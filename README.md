@@ -12,3 +12,4 @@ A few resources to get you started:
 
 - [Flutter: Writing custom platform-specific code](https://flutter.dev/docs/development/platform-integration/platform-channels?tab=ios-channel-swift-tab)
 - [Clover: Clover Connector iOS SDK](https://docs.clover.com/docs/ios)
+- [Clover: Configuring Secure Network Pay Display](https://docs.clover.com/docs/configuring-secure-network-pay-display)
