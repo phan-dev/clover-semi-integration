@@ -4,12 +4,14 @@ import CloverConnector
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
+    var cloverChannel : FlutterMethodChannel!
+
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
-        let cloverChannel = FlutterMethodChannel(name: "phan.dev/clover", binaryMessenger: controller.binaryMessenger)
+        cloverChannel = FlutterMethodChannel(name: "phan.dev/clover", binaryMessenger: controller.binaryMessenger)
         cloverChannel.setMethodCallHandler({
             [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
             // Note: this method is invoked on the UI thread.
@@ -26,16 +28,20 @@ import CloverConnector
     
     private func receiveConnectionStatus(result: FlutterResult) {
         var cc:ICloverConnector?
-        var cm = ConnectionManager(cloverConnector: cc)
+        var cm = ConnectionManager(cloverConnector: cc, channel: cloverChannel)
         cm.connect()
-        result(cm._pairingCode)
     }
 }
 
 class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfiguration {
     var cc:ICloverConnector?
 
-    var _pairingCode: String = "N/A"
+    var myChannel: FlutterMethodChannel
+    init(cloverConnector: ICloverConnector?, channel: FlutterMethodChannel){
+        self.myChannel = channel
+        super.init(cloverConnector: cc)
+    }
+
     func connect() {
         // load from previous pairing, or nil will force/require
         // a new pairing with the device
@@ -67,9 +73,7 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
     func onPairingCode(_ pairingCode: String) {
         // display pairingCode to user, to be entered on the Clover Mini
 
-        self._pairingCode = pairingCode
-        print("Pairing Code: " + pairingCode)
-        debugPrint("Pairing Code: " + pairingCode)
+        myChannel.invokeMethod("getCode", arguments: pairingCode);
     }
 
     func onPairingSuccess(_ authToken: String) {

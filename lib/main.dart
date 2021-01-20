@@ -52,17 +52,19 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+var _platform = MethodChannel('phan.dev/clover');
 class _MyHomePageState extends State<MyHomePage> {
-  static const platform = const MethodChannel('phan.dev/clover');
-
   // Get connection status.
   String _connectionStatus = 'Unknown status.';
   String _pairingCode = 'Unknown code.';
 
   Future<void> _getConnection() async {
     String connectionStatus;
+
+    _platform.setMethodCallHandler(this._methodCallHandler);
+
     try {
-      final String result = await platform.invokeMethod('getConnection');
+      final String result = await _platform.invokeMethod('getConnection');
       connectionStatus = 'Connection status: $result';
     } on PlatformException catch (e) {
       connectionStatus = "Failed to connect: '${e.message}'.";
@@ -71,6 +73,22 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _connectionStatus = connectionStatus;
     });
+  }
+
+  Future<void> _methodCallHandler(MethodCall call) async {
+    switch (call.method) {
+      case 'getCode':
+        String pairingCode = call.arguments;
+        setState(() {
+          _pairingCode = pairingCode;
+        });
+        break;
+      default:
+        String pairingCode = "N/A";
+        setState(() {
+          _pairingCode = pairingCode;
+        });
+    }
   }
 
   @override
