@@ -1,5 +1,8 @@
 # Clover Semi-integration for Flutter-based POS (iOS)
 
+## Screenshot
+
+<img src="FlutterPOS.png" width="200">
 
 ## Technical
 
