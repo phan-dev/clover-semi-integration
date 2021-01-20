@@ -65,8 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _platform.setMethodCallHandler(this._methodCallHandler);
 
+    String endpoint = endpointTextEditingController.text;
+
     try {
-      final String result = await _platform.invokeMethod('connect');
+      final String result = await _platform.invokeMethod('connect', endpoint);
       connectionStatus = 'Connection status: $result';
     } on PlatformException catch (e) {
       connectionStatus = "Failed to connect: '${e.message}'.";
@@ -77,11 +79,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  final textEditingController = TextEditingController();
+  final amountTextEditingController = TextEditingController(text: '1.23');
+  final endpointTextEditingController = TextEditingController(text: 'wss://192.168.1.137:12345/remote_pay');
 
   Future<void> _takePayment() async {
     String paymentStatus;
-    String amount = textEditingController.text;
+
+    String amount = amountTextEditingController.text;
+
     try {
       final String result = await _platform.invokeMethod('takePayment', amount);
       paymentStatus = 'Payment status: $result';
@@ -98,17 +103,17 @@ class _MyHomePageState extends State<MyHomePage> {
     switch (call.method) {
       case 'getCode':
         setState(() {
-          _pairingCode = call.arguments;
+          _pairingCode = 'Pairing code: ' + call.arguments;
         });
         break;
       case 'getConnectionStatus':
         setState(() {
-          _connectionStatus = call.arguments;
+          _connectionStatus = 'Connection status: ' + call.arguments;
         });
         break;
       case 'getPaymentStatus':
         setState(() {
-          _paymentStatus = call.arguments;
+          _paymentStatus = 'Payment status: ' + call.arguments;
         });
         break;
       default:
@@ -125,6 +130,14 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            TextField(
+              obscureText: false,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Endpoint',
+              ),
+              controller: endpointTextEditingController,
+            ),
             ElevatedButton(
               child: Text('Connect'),
               onPressed: _connect,
@@ -139,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               keyboardType: TextInputType.numberWithOptions(decimal:true),
               inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))],
-              controller: textEditingController,
+              controller: amountTextEditingController,
             ),
             ElevatedButton(
               child: Text('Take Payment'),

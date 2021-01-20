@@ -21,11 +21,12 @@ import CloverConnector
                 return
             }
             if(call.method == "connect"){
-                self?.receiveConnectionStatus(result: result)
+                let endpoint = call.arguments as! String
+                self?.connect(result: result, endpoint: endpoint)
             }
             else if(call.method == "takePayment"){
                 let _amount = call.arguments as! String
-                self?.takePayment(amount: _amount)
+                self?.takePayment(result: result, amount: _amount)
             }
         })
         
@@ -33,21 +34,22 @@ import CloverConnector
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     
-    private func receiveConnectionStatus(result: FlutterResult) {
+    private func connect(result: FlutterResult, endpoint: String) {
         var cc:ICloverConnector?
         cm = ConnectionManager(cloverConnector: cc, channel: cloverChannel)
-        cm.connect()
+        cm.connect(endpoint: endpoint)
+        result("Connecting")
     }
 
-    private func takePayment(amount: String) {
+    private func takePayment(result: FlutterResult, amount: String) {
         var _amount: String = ""
         if let index = amount.firstIndex(of: ".") {
             _amount = amount.replacingOccurrences(of: ".", with: "")
         } else {
             _amount += amount + "00"
         }
-        
         cm.doSale(amount: Int(_amount)!)
+        result("Processing")
     }
 }
 
@@ -62,12 +64,13 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         super.init(cloverConnector: cc)
     }
 
-    func connect() {
+    func connect(endpoint: String) {
         // load from previous pairing, or nil will force/require
         // a new pairing with the device
         let savedAuthToken = loadAuthToken()
 
-        let config = WebSocketDeviceConfiguration(endpoint: "wss://192.168.1.137:12345/remote_pay",
+        //let endpoint = "wss://192.168.1.137:12345/remote_pay"
+        let config = WebSocketDeviceConfiguration(endpoint: endpoint,
             remoteApplicationID: "phan.dev",
             posName: "Flutter POS", posSerial: "POS-123",
             pairingAuthToken: savedAuthToken, pairingDeviceConfiguration: self)
