@@ -77,10 +77,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  final textEditingController = TextEditingController();
+
   Future<void> _takePayment() async {
     String paymentStatus;
+    String amount = textEditingController.text;
     try {
-      final String result = await _platform.invokeMethod('takePayment');
+      final String result = await _platform.invokeMethod('takePayment', amount);
       paymentStatus = 'Payment status: $result';
     } on PlatformException catch (e) {
       paymentStatus = "Failed to take payment: '${e.message}'.";
@@ -128,6 +131,16 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(_connectionStatus),
             Text(_pairingCode),
+            TextField(
+              obscureText: false,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Amount',
+              ),
+              keyboardType: TextInputType.numberWithOptions(decimal:true),
+              inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))],
+              controller: textEditingController,
+            ),
             ElevatedButton(
               child: Text('Take Payment'),
               onPressed: _takePayment,

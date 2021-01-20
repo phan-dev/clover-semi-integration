@@ -24,7 +24,8 @@ import CloverConnector
                 self?.receiveConnectionStatus(result: result)
             }
             else if(call.method == "takePayment"){
-                self?.takePayment(result: result)
+                let _amount = call.arguments as! String
+                self?.takePayment(amount: _amount)
             }
         })
         
@@ -38,8 +39,15 @@ import CloverConnector
         cm.connect()
     }
 
-    private func takePayment(result: FlutterResult) {
-        cm.doSale()
+    private func takePayment(amount: String) {
+        var _amount: String = ""
+        if let index = amount.firstIndex(of: ".") {
+            _amount = amount.replacingOccurrences(of: ".", with: "")
+        } else {
+            _amount += amount + "00"
+        }
+        
+        cm.doSale(amount: Int(_amount)!)
     }
 }
 
@@ -69,10 +77,11 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         cc?.initializeConnection()
     }
 
-    func doSale() {
-        cc?.showMessage("Take Payment")
+    func doSale(amount: Int) {
+        cc?.showMessage("Payment Processing")
         // if onDeviceReady has been called
-        let saleRequest = SaleRequest(amount: 131, externalId: "bc54de43g1")
+        let externalId = String(arc4random())
+        let saleRequest = SaleRequest(amount: amount, externalId: externalId)
         // configure other properties of SaleRequest
         cc?.sale(saleRequest)
     }
@@ -87,7 +96,7 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
     // PairingDeviceConfiguration
     func onPairingCode(_ pairingCode: String) {
         // display pairingCode to user, to be entered on the Clover Mini
-        myChannel.invokeMethod("getCode", arguments: pairingCode);
+        myChannel.invokeMethod("getCode", arguments: pairingCode)
     }
 
     func onPairingSuccess(_ authToken: String) {
@@ -95,7 +104,7 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         // save this authToken to pass in to the config for future connections
         // so pairing will happen automatically
         saveAuthToken(token: authToken)
-        myChannel.invokeMethod("getConnectionStatus", arguments: "onPairingSuccess");
+        myChannel.invokeMethod("getConnectionStatus", arguments: "onPairingSuccess")
     }
 
 
@@ -103,17 +112,17 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
 
     // called when device is disconnected
     override func onDeviceDisconnected() {
-        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceDisconnected");
+        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceDisconnected")
     }
 
     // called when device is connected, but not ready for requests
     override func onDeviceConnected() {
-        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceConnected");
+        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceConnected")
     }
 
     // called when device is ready to take requests. Note: May be called more than once
     override func onDeviceReady(_ info:MerchantInfo){
-        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceReady");
+        myChannel.invokeMethod("getConnectionStatus", arguments: "onDeviceReady")
     }
 
     // required if Mini wants the POS to verify a signature
@@ -121,7 +130,7 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         //present signature to user, then
         // acceptSignature(...) or rejectSignature(...)
         cc?.acceptSignature(signatureVerifyRequest)
-        myChannel.invokeMethod("getPaymentStatus", arguments: "onVerifySignatureRequest");
+        myChannel.invokeMethod("getPaymentStatus", arguments: "onVerifySignatureRequest")
     }
 
     // required if Mini wants the POS to verify a payment
@@ -130,17 +139,17 @@ class ConnectionManager : DefaultCloverConnectorListener, PairingDeviceConfigura
         cc?.acceptPayment(request.payment!)
         // or
         // cc?.rejectPayment(...)
-        myChannel.invokeMethod("getPaymentStatus", arguments: "onConfirmPaymentRequest");
+        myChannel.invokeMethod("getPaymentStatus", arguments: "onConfirmPaymentRequest")
     }
 
     // override other callback methods
     override func onSaleResponse(_ response:SaleResponse) {
         if response.success {
             // sale successful and payment is in the response (response.payment)
-            myChannel.invokeMethod("getPaymentStatus", arguments: "sale successful");
+            myChannel.invokeMethod("getPaymentStatus", arguments: "sale successful")
         } else {
             // sale failed or was canceled
-            myChannel.invokeMethod("getPaymentStatus", arguments: "sale failed or was canceled");
+            myChannel.invokeMethod("getPaymentStatus", arguments: "sale failed or was canceled")
         }
     }
 
