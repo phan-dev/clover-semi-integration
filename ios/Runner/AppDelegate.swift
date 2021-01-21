@@ -43,7 +43,7 @@ import CloverConnector
 
     private func takePayment(result: FlutterResult, amount: String) {
         var _amount: String = ""
-        if let index = amount.firstIndex(of: ".") {
+        if amount.firstIndex(of: ".") != nil {
             _amount = amount.replacingOccurrences(of: ".", with: "")
         } else {
             _amount += amount + "00"
