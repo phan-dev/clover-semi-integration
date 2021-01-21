@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Clover Semi-integration with Flutter POS',
+      title: 'Clover Connect',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter POS'),
+      home: MyHomePage(title: 'Clover Connect'),
     );
   }
 }

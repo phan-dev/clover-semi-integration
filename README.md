@@ -2,7 +2,7 @@
 
 ## Screenshot
 
-<img src="FlutterPOS.png" width="200">
+<img src="screenshot.png" width="200">
 
 ## Supported devices
 
